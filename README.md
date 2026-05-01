@@ -5,9 +5,9 @@ Easy-to-understand version of [CVE-2026-31431](https://nvd.nist.gov/vuln/detail/
 By default, running `python3 copyfail.py` will run x64 shellcode exploiting `/usr/bin/su`. You can supply your own payload by running `python3 copyfail.py [path/to/custom/payload.elf]`. As an example, there is an ARM64 shellcode assembly inside `payloads/`. So to test on ARM64 devices, you first should build a minimized payload with our custom linker script:
 
 ```
-as -o shellcode_aarch64.o payloads/shellcode_aarch4.S
-ld -T link.ld -o shellcode_aarch64.elf shellcode_aarch64.o -nostdlib -static -e _start
-strip shellcode_aarch64.elf
+as -o shellcode_aarch64.o payloads/shellcode_aarch64.S
+ld -nostdlib -static -o shellcode_aarch64.elf shellcode_aarch64.o
+strip -s shellcode_aarch64.elf
 ```
 Then you can run the main exploit using `python3 copyfail.py shellcode_aarch64.elf`.
 

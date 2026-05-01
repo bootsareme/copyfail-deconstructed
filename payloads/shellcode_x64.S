@@ -20,6 +20,7 @@ _start:
     mov    $60, %eax
     syscall
 
+
 .section .rodata
 
 cmd:
