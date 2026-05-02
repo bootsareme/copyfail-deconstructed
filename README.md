@@ -25,13 +25,13 @@ make
 Specifically, this compiles the target .S file into a raw binary which is output as a c unsigned char array:
 ```
 gcc -c payloads/[shellcode].S
-objcpy -O binary [shellcode].o [payload].raw
+objcopy -O binary [shellcode].o [payload].raw
 xxd -i [payload].raw > payload.txt
 ```
 or, for 32 bit x86,
 ```
 gcc -c -m32 payloads/[shellcode].S
-objcpy -O binary [shellcode].o [payload].raw
+objcopy -O binary [shellcode].o [payload].raw
 xxd -i [payload].raw > payload.txt
 ```
 
