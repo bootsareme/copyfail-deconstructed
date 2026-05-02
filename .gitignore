@@ -53,3 +53,9 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# C build/binary files
+c_port/*.o
+c_port/*.raw
+c_port/*.exe
+c_port/*.txt
