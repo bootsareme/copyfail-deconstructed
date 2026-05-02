@@ -16,8 +16,6 @@ For running on C:
 2. `./c_copyfail` which runs the same default shellcode as above.
   - You can again supply your own payload by running `./c_copyfail [path/to/custom/payload.elf]`.  
 
-
-
 For building the C version:
 ```
 cd c_port
@@ -30,6 +28,13 @@ gcc -c payloads/[shellcode].S
 objcpy -O binary [shellcode].o [payload].raw
 xxd -i [payload].raw > payload.txt
 ```
+or, for 32 bit x86,
+```
+gcc -c -m32 payloads/[shellcode].S
+objcpy -O binary [shellcode].o [payload].raw
+xxd -i [payload].raw > payload.txt
+```
+
 You can then copy the contents of this file into your source code.
 
 ## Fixes
