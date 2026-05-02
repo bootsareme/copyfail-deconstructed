@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS = -g -O2 -Wall -Wextra -pedantic -fsanitize=address
 LDFLAGS = -g -Wall -Wextra -O2 -fsanitize=address
-EXEC = c_infect_copyfail.out
+EXEC = c_infect_copyfail.exe
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
 

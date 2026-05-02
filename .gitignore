@@ -57,5 +57,5 @@ dkms.conf
 # C build/binary files
 c_port/*.o
 c_port/*.raw
-c_port/*.out
+c_port/*.exe
 c_port/*.txt

@@ -12,7 +12,7 @@ if len(sys.argv) == 2: # custom payload is specified
         print(f"Read in custom payload with size = {len(payload)} bytes")
 
 
-def send(fd, offset, chunk): 
+ydef send(fd, offset, chunk): 
     conn.sendmsg(
         [b"A" * 4 + chunk],
         [
