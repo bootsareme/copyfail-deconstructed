@@ -21,6 +21,6 @@ _start:
 
     # exit(0)
     xor    %ebx, %ebx
-    mov    $1, %eax
+    mov    $1, %al
     int    $0x80
 
