@@ -22,7 +22,7 @@ cd c_port
 make
 ```
 
-Specifically, this compiles the target .S file into a raw binary which is output as a c unsigned char array:
+Specifically, this compiles the target .S file into a raw binary which is output as a C unsigned char array:
 ```
 gcc -c payloads/[shellcode].S
 objcopy -O binary [shellcode].o [payload].raw
@@ -35,7 +35,7 @@ objcopy -O binary [shellcode].o [payload].raw
 xxd -i [payload].raw > payload.txt
 ```
 
-You can then copy the contents of this file into your source code.
+You can then copy the contents of this file into your source code, or you can just directly run `./c_copyfail.exe [payload].raw`.
 
 ## Fixes
 To avoid exploitation, run:
