@@ -35,7 +35,7 @@ objcopy -O binary [shellcode].o [payload].raw
 xxd -i [payload].raw > payload.txt
 ```
 
-You can then copy the contents of this file into your source code, or you can just directly run `./c_copyfail.exe [payload].raw`.
+You can then copy the contents of this file into your source code, or you can just directly run `./c_copyfail.exe [path/to/payload.elf]` where `payload.elf` is generated from `as` + `ld` NOT `gcc` + `objcopy`.
 
 ## Fixes
 To avoid exploitation, run:
