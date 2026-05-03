@@ -128,7 +128,7 @@ int main(int argc, char** argv){
                     if (fread(buff, 1, fsize, payload_fptr) == (size_t)fsize) {
                         payload = buff;
                         payload_len = (size_t)fsize;
-                        is_alloc = true;
+                        is_alloc = 1;
                     } else {
                         free(buff);
                     }
