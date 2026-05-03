@@ -1,7 +1,7 @@
 CC = gcc
 
-CFLAGS = -g -O2 -Wall -Wextra -pedantic -fsanitize=address
-LDFLAGS = -g -Wall -Wextra -O2 -fsanitize=address
+CFLAGS = -g -O2 -Wall -Wextra -pedantic
+LDFLAGS = -g -Wall -Wextra -O2
 EXEC = c_copyfail
 SOURCES = $(wildcard *.c)
 OBJECTS = $(SOURCES:.c=.o)
@@ -35,4 +35,3 @@ clean:
 	-rm *.exe
 	-rm *.txt
 	-rm *.raw
-
