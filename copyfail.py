@@ -16,14 +16,7 @@ if len(sys.argv) == 2: # custom payload is specified
 SPLICE_F_MORE = 4
 libc = ctypes.CDLL("libc.so.6", use_errno=True)
 libc.splice.restype = ctypes.c_ssize_t
-libc.splice.argtypes = [
-    ctypes.c_int,
-    ctypes.POINTER(ctypes.c_int64),
-    ctypes.c_int,
-    ctypes.POINTER(ctypes.c_int64),
-    ctypes.c_size_t,
-    ctypes.c_uint,
-]
+libc.splice.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_size_t, ctypes.c_uint]
 
 
 def splice(f, w, o, offset_src=None, offset_dst=None, flags=SPLICE_F_MORE):
@@ -40,7 +33,6 @@ def splice(f, w, o, offset_src=None, offset_dst=None, flags=SPLICE_F_MORE):
         p_off_out = None
 
     ret = libc.splice(f, p_off_in, w, p_off_out, o, flags)
-
     if ret == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno))
