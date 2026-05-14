@@ -5,7 +5,7 @@ _start:
     // setuid(0)
     mov    x0, xzr
     mov    x8, #146
-    svc    #0            // all instructions after this point run as UID = 0 (root)
+    svc    #0            // all instructions after this point run as UID=0 (root)
 
     // execve("/bin/sh", NULL, NULL)
     adrp   x0, cmd
